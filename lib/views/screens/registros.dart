@@ -35,6 +35,10 @@ class _RegistrosUIState extends State<RegistrosUI> {
   @override
   void initState() {
     super.initState();
+    _initializeData(); // Llama a la función asíncrona
+  }
+
+  Future<void> _initializeData() async {
     if (widget.persona != null) {
       // Cargar los datos de la persona en los controladores y la ruta de imagen
       nombresController.text = widget.persona!.nombres;
@@ -48,6 +52,16 @@ class _RegistrosUIState extends State<RegistrosUI> {
             DateFormat('yyyy-MM-dd').format(widget.persona!.fechaCumpleanos!);
       }
       _imagePath = widget.persona!.imagePath;
+
+      // Comprobar si el archivo de imagen existe (solo para móvil)
+      if (_imagePath != null && !kIsWeb && File(_imagePath!).existsSync()) {
+        // Si el archivo existe, intenta cargarlo
+        setState(() {});
+      } else {
+        // Si el archivo no existe o falla, asigna la imagen predeterminada
+        _imagePath = 'images/person.png';
+        setState(() {});
+      }
     }
   }
 
@@ -96,8 +110,7 @@ class _RegistrosUIState extends State<RegistrosUI> {
       String? imagePath = _imagePath;
       if (imagePath == null) {
         // Si no hay imagen seleccionada, asignar la imagen predeterminada
-        imagePath =
-            'assets/images/person.png'; // Ruta de la imagen predeterminada
+        imagePath = 'images/person.png'; // Ruta de la imagen predeterminada
       }
 
       final nuevaPersona = Personas(
@@ -211,60 +224,115 @@ class _RegistrosUIState extends State<RegistrosUI> {
                     ? 'Este campo es obligatorio'
                     : null,
               ),
-              const SizedBox(height: 10),
-              ElevatedButton.icon(
-                onPressed: _seleccionarImagen,
-                icon: const Icon(Icons.image),
-                label: const Text("Seleccionar Imagen"),
+              const SizedBox(height: 20),
+              Container(
+                width: 200,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(0xFFfc3903), // Color inicial del gradiente
+                      Color(0xFFfcba03), // Color final del gradiente
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.all(
+                      Radius.circular(20.0)), // Bordes redondeados
+                ),
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent, // Fondo transparente
+                    shadowColor: Colors.transparent, // Sin sombra
+                  ),
+                  onPressed: _seleccionarImagen,
+                  icon: const Icon(Icons.image),
+                  label: const Text("Seleccionar Imagen"),
+                ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               if (_imagenBytes != null && kIsWeb)
                 Image.memory(
                   _imagenBytes!,
                   height: 150,
                   width: 150,
                   fit: BoxFit.cover,
-                ),
-              if (_imagePath != null && !kIsWeb)
+                )
+              else if (_imagePath != null && !kIsWeb)
                 Image.file(
                   File(_imagePath!),
                   height: 150,
                   width: 150,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Muestra la imagen predeterminada si falla al cargar la imagen
+                    return Image.asset(
+                      'images/person.png',
+                      height: 150,
+                      width: 150,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                )
+              else
+                Image.asset(
+                  'assets/images/person.png', // Imagen predeterminada
+                  height: 150,
+                  width: 150,
+                  fit: BoxFit.cover,
                 ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  final dni = dniController.text
-                      .trim(); // Eliminar espacios al principio y al final
-                  final telefono = telefonoController.text.trim();
+              Container(
+                width: 100,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(0xFFfc3903), // Color inicial del gradiente
+                      Color(0xFFfcba03), // Color final del gradiente
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.all(
+                      Radius.circular(20.0)), // Bordes redondeados
+                ),
+                child: TextButton(
+                  onPressed: () {
+                    // Primero verifica que los campos no estén vacíos
+                    if (_formKey.currentState?.validate() ?? false) {
+                      final dni = dniController.text.trim();
+                      final telefono = telefonoController.text.trim();
 
-                  // Verificar que el DNI tiene exactamente 8 dígitos y es un número
-                  if (dni.length != 8 || int.tryParse(dni) == null) {
-                    // Mostrar un mensaje de error si el DNI no es válido
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content:
-                              Text('El DNI debe ser un número de 8 dígitos.')),
-                    );
-                    return; // Detener la ejecución si el DNI no es válido
-                  }
+                      // Verificar que el DNI tiene exactamente 8 dígitos y es un número
+                      if (dni.length != 8 || int.tryParse(dni) == null) {
+                        // Mostrar un mensaje de error si el DNI no es válido
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  'El DNI debe ser un número de 8 dígitos.')),
+                        );
+                        return; // Detener la ejecución si el DNI no es válido
+                      }
 
-                  // Verificar que el teléfono es un número
-                  if (telefono.isEmpty || int.tryParse(telefono) == null) {
-                    // Mostrar un mensaje de error si el teléfono no es válido
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content:
-                              Text('El teléfono debe ser un número válido.')),
-                    );
-                    return; // Detener la ejecución si el teléfono no es válido
-                  }
+                      // Verificar que el teléfono es un número válido
+                      if (telefono.isEmpty || int.tryParse(telefono) == null) {
+                        // Mostrar un mensaje de error si el teléfono no es válido
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  'El teléfono debe ser un número válido.')),
+                        );
+                        return; // Detener la ejecución si el teléfono no es válido
+                      }
 
-                  // Si todo está bien, guardar la persona
-                  _guardarPersona(context);
-                },
-                child: const Text("Aceptar"),
+                      // Si todo está bien, guardar la persona
+                      _guardarPersona(context);
+                    }
+                  },
+                  child: const Text(
+                    "Aceptar",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
               ),
             ],
           ),
