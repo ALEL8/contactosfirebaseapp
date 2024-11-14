@@ -37,7 +37,11 @@ class ContactCard extends StatelessWidget {
                     height: 50,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
-                      return Image.asset('images/person.png', width: 50, height: 50,);
+                      return Image.asset(
+                        'images/person.png',
+                        width: 50,
+                        height: 50,
+                      );
                     },
                   )
                 : Icon(

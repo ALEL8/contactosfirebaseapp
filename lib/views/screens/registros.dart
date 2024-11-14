@@ -92,6 +92,14 @@ class _RegistrosUIState extends State<RegistrosUI> {
 
   void _guardarPersona(BuildContext context) {
     if (_formKey.currentState?.validate() ?? false) {
+      // Verificar si no se ha seleccionado una imagen
+      String? imagePath = _imagePath;
+      if (imagePath == null) {
+        // Si no hay imagen seleccionada, asignar la imagen predeterminada
+        imagePath =
+            'assets/images/person.png'; // Ruta de la imagen predeterminada
+      }
+
       final nuevaPersona = Personas(
         nombres: nombresController.text,
         apellidos: apellidosController.text,
@@ -102,7 +110,9 @@ class _RegistrosUIState extends State<RegistrosUI> {
         fechaCumpleanos: fechaCumpleanosController.text.isNotEmpty
             ? DateTime.parse(fechaCumpleanosController.text)
             : null,
-        imagePath: kIsWeb ? null : _imagePath,
+        imagePath: kIsWeb
+            ? null
+            : imagePath, // Usar la ruta de la imagen, aunque sea la predeterminada
       );
 
       final contactProvider =
