@@ -250,36 +250,27 @@ class _RegistrosUIState extends State<RegistrosUI> {
                 ),
               ),
               const SizedBox(height: 20),
-              if (_imagenBytes != null && kIsWeb)
-                Image.memory(
-                  _imagenBytes!,
-                  height: 150,
-                  width: 150,
-                  fit: BoxFit.cover,
-                )
-              else if (_imagePath != null && !kIsWeb)
-                Image.file(
-                  File(_imagePath!),
-                  height: 150,
-                  width: 150,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Muestra la imagen predeterminada si falla al cargar la imagen
-                    return Image.asset(
-                      'images/person.png',
-                      height: 150,
-                      width: 150,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                )
-              else
-                Image.asset(
-                  'assets/images/person.png', // Imagen predeterminada
-                  height: 150,
-                  width: 150,
-                  fit: BoxFit.cover,
-                ),
+              // Solo mostrar la imagen si ha sido seleccionada
+              if (_imagePath != null)
+                if (kIsWeb && _imagenBytes != null)
+                  Image.memory(
+                    _imagenBytes!,
+                    height: 150,
+                    width: 150,
+                    fit: BoxFit.cover,
+                  )
+                else if (_imagePath != null && !kIsWeb)
+                  Image.file(
+                    File(_imagePath!),
+                    height: 150,
+                    width: 150,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return SizedBox
+                          .shrink(); // No muestra nada si hay un error en la carga
+                    },
+                  ),
+
               const SizedBox(height: 20),
               Container(
                 width: 100,
